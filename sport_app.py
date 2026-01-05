@@ -175,66 +175,138 @@ st.markdown("""
         font-size: 14px !important;
     }
 
-    /* ========== CALENDRIER ========== */
-    .week-calendar {
-        background: #1a1a24 !important;
-        border-radius: 20px !important;
-        padding: 20px !important;
+    /* ========== NOUVEAU CALENDRIER MODERNE ========== */
+    .calendar-container {
         margin: 20px 0 !important;
     }
 
-    .week-title {
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        color: #ffffff !important;
-        margin-bottom: 16px !important;
-    }
-
-    .week-days {
+    .calendar-header {
         display: flex !important;
         justify-content: space-between !important;
-        gap: 8px !important;
+        align-items: center !important;
+        margin-bottom: 20px !important;
     }
 
-    .day-item {
-        flex: 1 !important;
+    .calendar-title {
+        font-size: 20px !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+    }
+
+    .calendar-week {
+        font-size: 14px !important;
+        color: #7c3aed !important;
+        font-weight: 600 !important;
+    }
+
+    .day-cards {
+        display: flex !important;
+        gap: 12px !important;
+        overflow-x: auto !important;
+        padding-bottom: 10px !important;
+    }
+
+    .day-card {
+        min-width: 140px !important;
+        background: linear-gradient(145deg, #1e1e2a, #252535) !important;
+        border-radius: 20px !important;
+        padding: 20px 16px !important;
         text-align: center !important;
-        padding: 16px 8px !important;
-        border-radius: 16px !important;
-        background: #252532 !important;
-        cursor: pointer !important;
-        transition: all 0.3s ease !important;
         border: 2px solid transparent !important;
+        transition: all 0.3s ease !important;
+        position: relative !important;
+        overflow: hidden !important;
     }
 
-    .day-item:hover {
+    .day-card::before {
+        content: "" !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 4px !important;
+        background: linear-gradient(90deg, #7c3aed, #ec4899) !important;
+        opacity: 0 !important;
+        transition: opacity 0.3s ease !important;
+    }
+
+    .day-card:hover {
+        transform: translateY(-4px) !important;
+        border-color: rgba(124, 58, 237, 0.3) !important;
+        box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2) !important;
+    }
+
+    .day-card:hover::before {
+        opacity: 1 !important;
+    }
+
+    .day-card.today {
         border-color: #7c3aed !important;
-        transform: translateY(-2px) !important;
+        box-shadow: 0 0 20px rgba(124, 58, 237, 0.3) !important;
     }
 
-    .day-item.completed {
+    .day-card.today::before {
+        opacity: 1 !important;
+    }
+
+    .day-card.completed {
+        background: linear-gradient(145deg, #065f46, #047857) !important;
+        border-color: #10b981 !important;
+    }
+
+    .day-card.completed::before {
         background: #10b981 !important;
+        opacity: 1 !important;
     }
 
-    .day-letter {
-        font-size: 12px !important;
+    .day-name {
+        font-size: 13px !important;
         font-weight: 600 !important;
         color: #94a3b8 !important;
-        margin-bottom: 4px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        margin-bottom: 8px !important;
     }
 
-    .day-item.completed .day-letter {
+    .day-card.completed .day-name {
         color: rgba(255,255,255,0.8) !important;
     }
 
-    .day-number {
-        font-size: 18px !important;
+    .day-workout {
+        font-size: 15px !important;
         font-weight: 700 !important;
         color: #ffffff !important;
+        margin-bottom: 8px !important;
+        line-height: 1.3 !important;
     }
 
-    .day-item.completed .day-number {
-        color: white !important;
+    .day-info {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        margin-top: 10px !important;
+    }
+
+    .day-info-item {
+        font-size: 11px !important;
+        color: #64748b !important;
+    }
+
+    .day-card.completed .day-info-item {
+        color: rgba(255,255,255,0.7) !important;
+    }
+
+    .day-status {
+        margin-top: 12px !important;
+        font-size: 20px !important;
+    }
+
+    .day-status-done {
+        color: #10b981 !important;
+    }
+
+    .day-status-pending {
+        color: #4b5563 !important;
     }
 
     /* ========== WORKOUT CARD ========== */
@@ -574,79 +646,80 @@ st.markdown("""
 
 JOURS_SEMAINE = ["Lun", "Mar", "Mer", "Jeu", "Ven"]
 
+# VIDÉOS YOUTUBE EN FRANÇAIS (Tibo InShape, Sissy MUA, Lucile Woodward, etc.)
 PROGRAMME_LUCA = {
     "Lun": {"titre": "Pectoraux & Triceps", "duree": "35", "kcal": "280", "couleur": "#7c3aed", "exercices": [
-        {"nom": "Pompes classiques", "icon": "💪", "sets": "4×20", "video": "https://www.youtube.com/watch?v=IODxDxX7oi4"},
-        {"nom": "Pompes diamant", "icon": "💎", "sets": "4×12", "video": "https://www.youtube.com/watch?v=J0DnG1_S92I"},
-        {"nom": "Pompes déclinées", "icon": "📐", "sets": "3×15", "video": "https://www.youtube.com/watch?v=SKPab2YC9AY"},
-        {"nom": "Dips sur chaises", "icon": "🪑", "sets": "4×15", "video": "https://www.youtube.com/watch?v=HCf97NPYeGY"},
-        {"nom": "Pompes serrées", "icon": "🔥", "sets": "3×15", "video": "https://www.youtube.com/watch?v=5M7JMb5jhq4"},
+        {"nom": "Pompes classiques", "icon": "💪", "sets": "4×20", "video": "https://www.youtube.com/watch?v=5eSM88TFzAs"},
+        {"nom": "Pompes diamant", "icon": "💎", "sets": "4×12", "video": "https://www.youtube.com/watch?v=pMzWJe0vAmk"},
+        {"nom": "Pompes déclinées", "icon": "📐", "sets": "3×15", "video": "https://www.youtube.com/watch?v=5eSM88TFzAs"},
+        {"nom": "Dips sur chaises", "icon": "🪑", "sets": "4×15", "video": "https://www.youtube.com/watch?v=0326dy_-CzM"},
+        {"nom": "Pompes serrées", "icon": "🔥", "sets": "3×15", "video": "https://www.youtube.com/watch?v=pMzWJe0vAmk"},
     ]},
     "Mar": {"titre": "Dos & Biceps", "duree": "40", "kcal": "320", "couleur": "#3b82f6", "exercices": [
-        {"nom": "Tractions", "icon": "🚪", "sets": "4×max", "video": "https://www.youtube.com/watch?v=eGo4IYlbE5g"},
-        {"nom": "Rowing inversé", "icon": "🪑", "sets": "4×12", "video": "https://www.youtube.com/watch?v=OYUxXMGVuuU"},
-        {"nom": "Superman", "icon": "🦸", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=cc6UVRS7PW4"},
-        {"nom": "Curl biceps", "icon": "🍶", "sets": "4×15", "video": "https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
-        {"nom": "Curl marteau", "icon": "🔨", "sets": "3×12", "video": "https://www.youtube.com/watch?v=zC3nLlEvin4"},
+        {"nom": "Tractions", "icon": "🚪", "sets": "4×max", "video": "https://www.youtube.com/watch?v=gOhJPXHdj4U"},
+        {"nom": "Rowing inversé", "icon": "🪑", "sets": "4×12", "video": "https://www.youtube.com/watch?v=hXTc1mDnZCw"},
+        {"nom": "Superman", "icon": "🦸", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=z6PJMT2y8GQ"},
+        {"nom": "Curl biceps", "icon": "🍶", "sets": "4×15", "video": "https://www.youtube.com/watch?v=in7PaeYlhrM"},
+        {"nom": "Curl marteau", "icon": "🔨", "sets": "3×12", "video": "https://www.youtube.com/watch?v=in7PaeYlhrM"},
     ]},
     "Mer": {"titre": "Abdos Intenses", "duree": "30", "kcal": "250", "couleur": "#ef4444", "exercices": [
-        {"nom": "Crunchs", "icon": "🎯", "sets": "4×25", "video": "https://www.youtube.com/watch?v=Xyd_fa5zoEU"},
-        {"nom": "Relevé de jambes", "icon": "🦵", "sets": "4×15", "video": "https://www.youtube.com/watch?v=JB2oyawG9KI"},
-        {"nom": "Planche", "icon": "📏", "sets": "4×1min", "video": "https://www.youtube.com/watch?v=ASdvN_XEl_c"},
-        {"nom": "Mountain climbers", "icon": "⛰️", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=nmwgirgXLYM"},
-        {"nom": "Bicycle crunch", "icon": "🚴", "sets": "3×20", "video": "https://www.youtube.com/watch?v=9FGilxCbdz8"},
+        {"nom": "Crunchs", "icon": "🎯", "sets": "4×25", "video": "https://www.youtube.com/watch?v=9pgJPbE7oAQ"},
+        {"nom": "Relevé de jambes", "icon": "🦵", "sets": "4×15", "video": "https://www.youtube.com/watch?v=9pgJPbE7oAQ"},
+        {"nom": "Planche", "icon": "📏", "sets": "4×1min", "video": "https://www.youtube.com/watch?v=TvxNkmjdhMM"},
+        {"nom": "Mountain climbers", "icon": "⛰️", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=wQq3ybaLZeA"},
+        {"nom": "Bicycle crunch", "icon": "🚴", "sets": "3×20", "video": "https://www.youtube.com/watch?v=9pgJPbE7oAQ"},
     ]},
     "Jeu": {"titre": "Épaules & Bras", "duree": "35", "kcal": "260", "couleur": "#f59e0b", "exercices": [
-        {"nom": "Pike push-ups", "icon": "🔺", "sets": "4×12", "video": "https://www.youtube.com/watch?v=sposDXWEB0A"},
-        {"nom": "Élévations latérales", "icon": "🦅", "sets": "4×15", "video": "https://www.youtube.com/watch?v=3VcKaXpzqRo"},
-        {"nom": "Handstand au mur", "icon": "🤸", "sets": "3×30s", "video": "https://www.youtube.com/watch?v=xIdKwIB3M3E"},
-        {"nom": "Curl concentration", "icon": "💪", "sets": "3×12", "video": "https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
-        {"nom": "Triceps extensions", "icon": "💥", "sets": "3×15", "video": "https://www.youtube.com/watch?v=_gsUck-7M74"},
+        {"nom": "Pike push-ups", "icon": "🔺", "sets": "4×12", "video": "https://www.youtube.com/watch?v=5eSM88TFzAs"},
+        {"nom": "Élévations latérales", "icon": "🦅", "sets": "4×15", "video": "https://www.youtube.com/watch?v=FeJP4E4Z-PY"},
+        {"nom": "Handstand au mur", "icon": "🤸", "sets": "3×30s", "video": "https://www.youtube.com/watch?v=qQVxyTPBsR8"},
+        {"nom": "Curl concentration", "icon": "💪", "sets": "3×12", "video": "https://www.youtube.com/watch?v=in7PaeYlhrM"},
+        {"nom": "Triceps extensions", "icon": "💥", "sets": "3×15", "video": "https://www.youtube.com/watch?v=0326dy_-CzM"},
     ]},
     "Ven": {"titre": "Jambes & Core", "duree": "40", "kcal": "350", "couleur": "#10b981", "exercices": [
-        {"nom": "Squats", "icon": "🦵", "sets": "4×20", "video": "https://www.youtube.com/watch?v=aclHkVaku9U"},
-        {"nom": "Fentes marchées", "icon": "🚶", "sets": "3×20", "video": "https://www.youtube.com/watch?v=QOVaHwm-Q6U"},
-        {"nom": "Pont fessier", "icon": "🌉", "sets": "4×15", "video": "https://www.youtube.com/watch?v=AVAXhy6pl7o"},
-        {"nom": "Squats bulgares", "icon": "🇧🇬", "sets": "3×12", "video": "https://www.youtube.com/watch?v=2C-uNgKwPLE"},
-        {"nom": "Mollets", "icon": "🦶", "sets": "4×25", "video": "https://www.youtube.com/watch?v=gwLzBJYoWlI"},
+        {"nom": "Squats", "icon": "🦵", "sets": "4×20", "video": "https://www.youtube.com/watch?v=m0GcZ24pK6k"},
+        {"nom": "Fentes marchées", "icon": "🚶", "sets": "3×20", "video": "https://www.youtube.com/watch?v=D7KaRcUTQeE"},
+        {"nom": "Pont fessier", "icon": "🌉", "sets": "4×15", "video": "https://www.youtube.com/watch?v=wPM8icPu6H8"},
+        {"nom": "Squats bulgares", "icon": "🇧🇬", "sets": "3×12", "video": "https://www.youtube.com/watch?v=D7KaRcUTQeE"},
+        {"nom": "Mollets", "icon": "🦶", "sets": "4×25", "video": "https://www.youtube.com/watch?v=m0GcZ24pK6k"},
     ]},
 }
 
 PROGRAMME_SONIA = {
     "Lun": {"titre": "Cardio Brûle-Graisse", "duree": "30", "kcal": "350", "couleur": "#ef4444", "exercices": [
-        {"nom": "Jumping jacks", "icon": "⭐", "sets": "4×45s", "video": "https://www.youtube.com/watch?v=c4DAnQ6DtF8"},
-        {"nom": "High knees", "icon": "🦵", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=D0CzP4JHbKQ"},
-        {"nom": "Burpees modifiés", "icon": "🔥", "sets": "3×10", "video": "https://www.youtube.com/watch?v=dZgVxmf6jkA"},
-        {"nom": "Mountain climbers", "icon": "⛰️", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=nmwgirgXLYM"},
-        {"nom": "Squat jumps", "icon": "🦘", "sets": "3×12", "video": "https://www.youtube.com/watch?v=U4s4mEQ5VqU"},
+        {"nom": "Jumping jacks", "icon": "⭐", "sets": "4×45s", "video": "https://www.youtube.com/watch?v=iSSAk4XCsRA"},
+        {"nom": "Montées de genoux", "icon": "🦵", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=iSSAk4XCsRA"},
+        {"nom": "Burpees modifiés", "icon": "🔥", "sets": "3×10", "video": "https://www.youtube.com/watch?v=qLBImHhCXSw"},
+        {"nom": "Mountain climbers", "icon": "⛰️", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=wQq3ybaLZeA"},
+        {"nom": "Squat jumps", "icon": "🦘", "sets": "3×12", "video": "https://www.youtube.com/watch?v=m0GcZ24pK6k"},
     ]},
     "Mar": {"titre": "Cuisses & Fessiers", "duree": "35", "kcal": "280", "couleur": "#ec4899", "exercices": [
-        {"nom": "Squats", "icon": "🦵", "sets": "4×20", "video": "https://www.youtube.com/watch?v=aclHkVaku9U"},
-        {"nom": "Sumo squats", "icon": "🏋️", "sets": "4×15", "video": "https://www.youtube.com/watch?v=9ZuXKqRbT9k"},
-        {"nom": "Pont fessier", "icon": "🌉", "sets": "4×25", "video": "https://www.youtube.com/watch?v=OUgsJ8-Vi0E"},
-        {"nom": "Donkey kicks", "icon": "🐴", "sets": "3×20", "video": "https://www.youtube.com/watch?v=BX67kECR0h0"},
-        {"nom": "Fire hydrant", "icon": "🔥", "sets": "3×15", "video": "https://www.youtube.com/watch?v=La3xYT8MGks"},
+        {"nom": "Squats", "icon": "🦵", "sets": "4×20", "video": "https://www.youtube.com/watch?v=m0GcZ24pK6k"},
+        {"nom": "Sumo squats", "icon": "🏋️", "sets": "4×15", "video": "https://www.youtube.com/watch?v=m0GcZ24pK6k"},
+        {"nom": "Pont fessier", "icon": "🌉", "sets": "4×25", "video": "https://www.youtube.com/watch?v=wPM8icPu6H8"},
+        {"nom": "Donkey kicks", "icon": "🐴", "sets": "3×20", "video": "https://www.youtube.com/watch?v=wPM8icPu6H8"},
+        {"nom": "Fire hydrant", "icon": "🔥", "sets": "3×15", "video": "https://www.youtube.com/watch?v=wPM8icPu6H8"},
     ]},
     "Mer": {"titre": "HIIT Brûle-Graisse", "duree": "25", "kcal": "400", "couleur": "#f97316", "exercices": [
-        {"nom": "Burpees", "icon": "🔥", "sets": "4×8", "video": "https://www.youtube.com/watch?v=dZgVxmf6jkA"},
-        {"nom": "Speed skaters", "icon": "⛸️", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=d1J3bkXgQf4"},
-        {"nom": "Squat pulses", "icon": "💫", "sets": "3×30s", "video": "https://www.youtube.com/watch?v=WGE1DYu9g5s"},
-        {"nom": "Step ups", "icon": "📦", "sets": "3×15", "video": "https://www.youtube.com/watch?v=dQqApCGd5Ss"},
-        {"nom": "Planche", "icon": "📏", "sets": "4×45s", "video": "https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+        {"nom": "Burpees", "icon": "🔥", "sets": "4×8", "video": "https://www.youtube.com/watch?v=qLBImHhCXSw"},
+        {"nom": "Speed skaters", "icon": "⛸️", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=iSSAk4XCsRA"},
+        {"nom": "Squat pulses", "icon": "💫", "sets": "3×30s", "video": "https://www.youtube.com/watch?v=m0GcZ24pK6k"},
+        {"nom": "Step ups", "icon": "📦", "sets": "3×15", "video": "https://www.youtube.com/watch?v=D7KaRcUTQeE"},
+        {"nom": "Planche", "icon": "📏", "sets": "4×45s", "video": "https://www.youtube.com/watch?v=TvxNkmjdhMM"},
     ]},
     "Jeu": {"titre": "Haut du Corps & Abdos", "duree": "30", "kcal": "220", "couleur": "#8b5cf6", "exercices": [
-        {"nom": "Pompes sur genoux", "icon": "💪", "sets": "4×12", "video": "https://www.youtube.com/watch?v=jWxvty2KROs"},
-        {"nom": "Dips sur chaise", "icon": "🪑", "sets": "3×12", "video": "https://www.youtube.com/watch?v=HCf97NPYeGY"},
-        {"nom": "Crunchs", "icon": "🎯", "sets": "4×20", "video": "https://www.youtube.com/watch?v=Xyd_fa5zoEU"},
-        {"nom": "Bicycle crunch", "icon": "🚴", "sets": "3×20", "video": "https://www.youtube.com/watch?v=9FGilxCbdz8"},
-        {"nom": "Planche latérale", "icon": "📐", "sets": "3×30s", "video": "https://www.youtube.com/watch?v=K2VljzCC16g"},
+        {"nom": "Pompes sur genoux", "icon": "💪", "sets": "4×12", "video": "https://www.youtube.com/watch?v=5eSM88TFzAs"},
+        {"nom": "Dips sur chaise", "icon": "🪑", "sets": "3×12", "video": "https://www.youtube.com/watch?v=0326dy_-CzM"},
+        {"nom": "Crunchs", "icon": "🎯", "sets": "4×20", "video": "https://www.youtube.com/watch?v=9pgJPbE7oAQ"},
+        {"nom": "Bicycle crunch", "icon": "🚴", "sets": "3×20", "video": "https://www.youtube.com/watch?v=9pgJPbE7oAQ"},
+        {"nom": "Planche latérale", "icon": "📐", "sets": "3×30s", "video": "https://www.youtube.com/watch?v=TvxNkmjdhMM"},
     ]},
     "Ven": {"titre": "Full Body", "duree": "35", "kcal": "380", "couleur": "#10b981", "exercices": [
-        {"nom": "Jumping jacks", "icon": "⭐", "sets": "3×1min", "video": "https://www.youtube.com/watch?v=c4DAnQ6DtF8"},
-        {"nom": "Squats + press", "icon": "🏋️", "sets": "4×15", "video": "https://www.youtube.com/watch?v=nKxPrWyTU4k"},
-        {"nom": "Pompes", "icon": "💪", "sets": "3×10", "video": "https://www.youtube.com/watch?v=jWxvty2KROs"},
-        {"nom": "Fentes alternées", "icon": "🚶", "sets": "3×20", "video": "https://www.youtube.com/watch?v=QOVaHwm-Q6U"},
-        {"nom": "Planche", "icon": "📏", "sets": "3×1min", "video": "https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+        {"nom": "Jumping jacks", "icon": "⭐", "sets": "3×1min", "video": "https://www.youtube.com/watch?v=iSSAk4XCsRA"},
+        {"nom": "Squats + press", "icon": "🏋️", "sets": "4×15", "video": "https://www.youtube.com/watch?v=m0GcZ24pK6k"},
+        {"nom": "Pompes", "icon": "💪", "sets": "3×10", "video": "https://www.youtube.com/watch?v=5eSM88TFzAs"},
+        {"nom": "Fentes alternées", "icon": "🚶", "sets": "3×20", "video": "https://www.youtube.com/watch?v=D7KaRcUTQeE"},
+        {"nom": "Planche", "icon": "📏", "sets": "3×1min", "video": "https://www.youtube.com/watch?v=TvxNkmjdhMM"},
     ]},
 }
 
@@ -753,29 +826,57 @@ def afficher_progression(prefix, poids_initial, poids_objectif, is_perte=False):
 
 def afficher_calendrier(prefix, programme):
     completed = get_completed_days(prefix)
+    today_name = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"][date.today().weekday()]
+    week_num = get_week_number()
 
-    st.markdown("""<div class="week-calendar"><div class="week-title">📅 Cette semaine</div><div class="week-days">""", unsafe_allow_html=True)
+    # Noms complets des jours
+    jours_complets = {"Lun": "LUNDI", "Mar": "MARDI", "Mer": "MERCREDI", "Jeu": "JEUDI", "Ven": "VENDREDI"}
 
-    jours_html = ""
+    st.markdown(f"""
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <div class="calendar-title">📅 Ta semaine</div>
+            <div class="calendar-week">Semaine {week_num}</div>
+        </div>
+        <div class="day-cards">
+    """, unsafe_allow_html=True)
+
+    cards_html = ""
     for jour in JOURS_SEMAINE:
         is_done = jour in completed
-        classe = "completed" if is_done else ""
-        check = "✓" if is_done else ""
-        jours_html += f"""
-        <div class="day-item {classe}">
-            <div class="day-letter">{jour}</div>
-            <div class="day-number">{check if is_done else "○"}</div>
+        is_today = jour == today_name
+        workout = programme[jour]
+
+        classes = []
+        if is_done:
+            classes.append("completed")
+        if is_today and not is_done:
+            classes.append("today")
+
+        status_icon = "✓" if is_done else "○"
+        status_class = "day-status-done" if is_done else "day-status-pending"
+
+        cards_html += f"""
+        <div class="day-card {' '.join(classes)}">
+            <div class="day-name">{jours_complets[jour]}</div>
+            <div class="day-workout">{workout['titre']}</div>
+            <div class="day-info">
+                <span class="day-info-item">⏱ {workout['duree']}min</span>
+                <span class="day-info-item">🔥 {workout['kcal']}kcal</span>
+            </div>
+            <div class="day-status {status_class}">{status_icon}</div>
         </div>
         """
 
-    st.markdown(jours_html + "</div></div>", unsafe_allow_html=True)
+    st.markdown(cards_html + "</div></div>", unsafe_allow_html=True)
 
-    # Boutons pour cocher/décocher
+    # Boutons pour marquer comme fait
+    st.markdown("##### Marquer comme fait :")
     cols = st.columns(5)
     for i, jour in enumerate(JOURS_SEMAINE):
         with cols[i]:
             is_done = jour in completed
-            label = "✓" if is_done else "○"
+            label = f"✓ {jour}" if is_done else f"○ {jour}"
             if st.button(label, key=f"{prefix}_toggle_{jour}", use_container_width=True):
                 toggle_day(prefix, jour)
                 st.rerun()
