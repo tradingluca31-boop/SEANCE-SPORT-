@@ -1,11 +1,12 @@
 import streamlit as st
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import os
+import random
 
 # Configuration de la page
 st.set_page_config(
-    page_title="🏋️ Programme Sport Maison",
+    page_title="FitHome Pro",
     page_icon="💪",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -15,836 +16,859 @@ st.set_page_config(
 DATA_FILE = "progress_data.json"
 
 def load_data():
-    """Charge les données sauvegardées"""
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'r') as f:
             return json.load(f)
     return {
-        "luca": {"poids_history": [], "seances_completees": [], "poids_actuel": 88},
-        "sonia": {"poids_history": [], "seances_completees": [], "poids_actuel": 75}
+        "luca": {"poids_history": [], "seances_completees": [], "poids_actuel": 88, "streak": 0},
+        "sonia": {"poids_history": [], "seances_completees": [], "poids_actuel": 75, "streak": 0}
     }
 
 def save_data(data):
-    """Sauvegarde les données"""
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f)
 
-# Charger les données
 if 'data' not in st.session_state:
     st.session_state.data = load_data()
 
-# Citations motivantes
-CITATIONS = [
-    "💪 La douleur d'aujourd'hui est la force de demain !",
-    "🔥 Chaque répétition te rapproche de ton objectif !",
-    "⭐ Tu es plus fort(e) que tu ne le penses !",
-    "🏆 Les champions sont faits de sueur et de persévérance !",
-    "💫 Ton seul concurrent, c'est toi d'hier !",
-    "🎯 Un petit progrès chaque jour mène à de grands résultats !",
-    "🚀 La discipline bat la motivation !",
-    "💎 Ton corps peut tout supporter, c'est ton mental qu'il faut convaincre !",
-    "🌟 Pas d'excuses, que des résultats !",
-    "⚡ La sueur d'aujourd'hui, c'est le sourire de demain !"
-]
-
-# CSS personnalisé pour un design professionnel
+# CSS Professionnel - Inspiré Nike Training, Freeletics, Fitbod
 st.markdown("""
 <style>
-    /* Import Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+    :root {
+        --bg-primary: #13131a;
+        --bg-secondary: #1c1c26;
+        --bg-card: #23232f;
+        --accent-purple: #7c3aed;
+        --accent-pink: #ec4899;
+        --accent-blue: #3b82f6;
+        --accent-green: #10b981;
+        --accent-orange: #f97316;
+        --text-primary: #ffffff;
+        --text-secondary: #94a3b8;
+        --text-muted: #64748b;
+    }
 
     * {
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Outfit', sans-serif;
     }
 
-    .main {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    /* Fond principal */
+    .stApp {
+        background: var(--bg-primary) !important;
     }
 
+    .main .block-container {
+        padding: 1.5rem 2rem;
+        max-width: 1200px;
+    }
+
+    /* Masquer éléments Streamlit */
+    #MainMenu, footer, header {visibility: hidden;}
+    .stDeployButton {display: none;}
+
+    /* Onglets modernes */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: rgba(255,255,255,0.05);
-        border-radius: 15px;
-        padding: 10px;
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        padding: 6px;
+        gap: 6px;
     }
 
     .stTabs [data-baseweb="tab"] {
-        height: 60px;
-        padding: 10px 30px;
-        background-color: rgba(255,255,255,0.1);
-        border-radius: 10px;
-        color: white;
+        background: transparent;
+        border-radius: 12px;
+        color: var(--text-secondary);
         font-weight: 600;
-        font-size: 16px;
+        font-size: 15px;
+        padding: 12px 24px;
     }
 
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        background: var(--accent-purple) !important;
+        color: white !important;
     }
 
-    .profile-card {
-        background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-        border-radius: 20px;
-        padding: 25px;
-        margin-bottom: 30px;
-        border: 1px solid rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
+    /* === COMPOSANTS CUSTOM === */
+
+    /* Hero Card */
+    .hero-card {
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+        border-radius: 24px;
+        padding: 32px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
     }
 
-    .profile-card-luca {
-        background: linear-gradient(145deg, rgba(102,126,234,0.2), rgba(118,75,162,0.1));
-    }
-
-    .profile-card-sonia {
-        background: linear-gradient(145deg, rgba(236,72,153,0.2), rgba(239,68,68,0.1));
-    }
-
-    .profile-name {
-        font-size: 32px;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 5px;
-    }
-
-    .profile-stats {
-        display: flex;
-        gap: 20px;
-        margin-top: 15px;
-        flex-wrap: wrap;
-    }
-
-    .stat-item {
+    .hero-card::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
         background: rgba(255,255,255,0.1);
-        padding: 10px 20px;
-        border-radius: 10px;
+        border-radius: 50%;
+    }
+
+    .hero-greeting {
+        font-size: 16px;
+        color: rgba(255,255,255,0.8);
+        margin-bottom: 4px;
+    }
+
+    .hero-name {
+        font-size: 32px;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 16px;
+    }
+
+    .hero-stats {
+        display: flex;
+        gap: 24px;
+    }
+
+    .hero-stat {
         text-align: center;
     }
 
-    .stat-value {
-        font-size: 20px;
-        font-weight: 600;
-        color: #fff;
-    }
-
-    .stat-label {
-        font-size: 12px;
-        color: rgba(255,255,255,0.7);
-    }
-
-    .objective-box {
-        background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(16,185,129,0.1));
-        border-left: 4px solid #22c55e;
-        padding: 15px 20px;
-        border-radius: 0 10px 10px 0;
-        margin-top: 15px;
-    }
-
-    .objective-title {
-        color: #22c55e;
-        font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 5px;
-    }
-
-    .objective-text {
-        color: white;
-        font-size: 14px;
-    }
-
-    .materiel-box {
-        background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(37,99,235,0.1));
-        border-left: 4px solid #3b82f6;
-        padding: 15px 20px;
-        border-radius: 0 10px 10px 0;
-        margin-top: 10px;
-    }
-
-    .materiel-title {
-        color: #3b82f6;
-        font-weight: 600;
-        font-size: 14px;
-        margin-bottom: 5px;
-    }
-
-    .materiel-text {
-        color: white;
-        font-size: 13px;
-    }
-
-    .motivation-box {
-        background: linear-gradient(135deg, rgba(245,158,11,0.3), rgba(234,88,12,0.2));
-        border: 2px solid #f59e0b;
-        padding: 20px;
-        border-radius: 15px;
-        margin: 20px 0;
-        text-align: center;
-    }
-
-    .motivation-text {
-        color: #fbbf24;
-        font-size: 18px;
-        font-weight: 600;
-    }
-
-    .progress-box {
-        background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-        border-radius: 20px;
-        padding: 25px;
-        margin: 20px 0;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .progress-title {
-        color: white;
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
-
-    .streak-box {
-        background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(220,38,38,0.1));
-        border: 2px solid #ef4444;
-        padding: 15px 25px;
-        border-radius: 15px;
-        text-align: center;
-        display: inline-block;
-    }
-
-    .streak-number {
-        font-size: 36px;
+    .hero-stat-value {
+        font-size: 28px;
         font-weight: 700;
-        color: #ef4444;
+        color: white;
     }
 
-    .streak-label {
+    .hero-stat-label {
         font-size: 12px;
         color: rgba(255,255,255,0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-    .day-card {
-        background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-        border-radius: 15px;
+    /* Streak Badge */
+    .streak-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.2);
+        padding: 8px 16px;
+        border-radius: 50px;
+        margin-top: 16px;
+    }
+
+    .streak-badge-text {
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    /* Calendrier semaine horizontal */
+    .week-calendar {
+        background: var(--bg-card);
+        border-radius: 20px;
         padding: 20px;
-        margin: 10px 0;
-        border: 1px solid rgba(255,255,255,0.1);
-        transition: all 0.3s ease;
-        cursor: pointer;
+        margin: 20px 0;
     }
 
-    .day-card:hover {
-        transform: translateY(-5px);
-        border-color: rgba(102,126,234,0.5);
-        box-shadow: 0 10px 30px rgba(102,126,234,0.2);
+    .week-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 16px;
     }
 
-    .day-header {
+    .week-days {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
+        gap: 8px;
     }
 
-    .day-name {
-        font-size: 18px;
-        font-weight: 600;
-        color: white;
+    .day-item {
+        flex: 1;
+        text-align: center;
+        padding: 16px 8px;
+        border-radius: 16px;
+        background: var(--bg-secondary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
     }
 
-    .day-badge {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        padding: 5px 15px;
-        border-radius: 20px;
+    .day-item:hover {
+        border-color: var(--accent-purple);
+        transform: translateY(-2px);
+    }
+
+    .day-item.active {
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+        border-color: transparent;
+    }
+
+    .day-item.completed {
+        background: var(--accent-green);
+    }
+
+    .day-letter {
         font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+    }
+
+    .day-item.active .day-letter,
+    .day-item.completed .day-letter {
+        color: rgba(255,255,255,0.8);
+    }
+
+    .day-number {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .day-item.active .day-number,
+    .day-item.completed .day-number {
         color: white;
-        font-weight: 500;
     }
 
-    .day-badge-cardio {
-        background: linear-gradient(135deg, #f97316, #ef4444);
+    .day-check {
+        font-size: 16px;
+        margin-top: 4px;
     }
 
-    .day-badge-repos {
-        background: linear-gradient(135deg, #22c55e, #10b981);
+    /* Workout Card */
+    .workout-card {
+        background: var(--bg-card);
+        border-radius: 24px;
+        padding: 24px;
+        margin: 16px 0;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .workout-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .workout-badge {
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 700;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .workout-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-top: 12px;
+    }
+
+    .workout-meta {
+        display: flex;
+        gap: 16px;
+        margin-top: 12px;
+    }
+
+    .workout-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    /* Exercise List */
+    .exercise-list {
+        margin-top: 20px;
     }
 
     .exercise-item {
-        background: rgba(255,255,255,0.05);
-        padding: 12px 15px;
-        border-radius: 10px;
-        margin: 8px 0;
         display: flex;
         align-items: center;
-        gap: 10px;
-        color: rgba(255,255,255,0.9);
+        gap: 16px;
+        padding: 16px;
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+    .exercise-item:hover {
+        background: rgba(124, 58, 237, 0.15);
+        border-color: var(--accent-purple);
+        transform: translateX(4px);
+    }
+
+    .exercise-icon-box {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .exercise-content {
+        flex: 1;
+    }
+
+    .exercise-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+
+    .exercise-sets {
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .exercise-play {
+        width: 40px;
+        height: 40px;
+        background: var(--accent-purple);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
         font-size: 14px;
     }
 
-    .exercise-icon {
-        font-size: 20px;
+    /* Progress Card */
+    .progress-card {
+        background: var(--bg-card);
+        border-radius: 20px;
+        padding: 24px;
+        margin: 16px 0;
     }
 
-    .video-container {
-        background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .progress-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .progress-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--accent-green);
+    }
+
+    .progress-bar {
+        height: 10px;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-green), #34d399);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+    }
+
+    /* Objective Card */
+    .objective-card {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.1));
+        border: 1px solid var(--accent-green);
+        border-radius: 16px;
+        padding: 20px;
+        margin: 16px 0;
+    }
+
+    .objective-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent-green);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .objective-text {
+        font-size: 15px;
+        color: var(--text-primary);
+        line-height: 1.5;
+    }
+
+    /* Video Modal */
+    .video-card {
+        background: var(--bg-card);
         border-radius: 20px;
-        padding: 25px;
-        margin-top: 20px;
-        border: 1px solid rgba(255,255,255,0.1);
+        padding: 24px;
+        margin: 20px 0;
+        border: 2px solid var(--accent-purple);
+    }
+
+    .video-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .video-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #ef4444, #f97316);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
     }
 
     .video-title {
         font-size: 20px;
-        font-weight: 600;
-        color: white;
-        margin-bottom: 15px;
+        font-weight: 700;
+        color: var(--text-primary);
     }
 
+    .video-subtitle {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    /* Buttons */
     .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        padding: 10px 25px;
-        border-radius: 10px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        width: 100%;
+        background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink)) !important;
+        color: white !important;
+        border: none !important;
+        padding: 14px 28px !important;
+        border-radius: 14px !important;
+        font-weight: 600 !important;
+        font-size: 15px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3) !important;
     }
 
     .stButton > button:hover {
-        transform: scale(1.02);
-        box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4) !important;
     }
 
-    .btn-sonia > button {
-        background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%) !important;
+    /* Selectbox */
+    .stSelectbox > div > div {
+        background: var(--bg-card) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        border-radius: 12px !important;
     }
 
-    h1, h2, h3 {
-        color: white !important;
+    /* Expander */
+    .streamlit-expanderHeader {
+        background: var(--bg-card) !important;
+        border-radius: 12px !important;
     }
 
-    .calendar-header {
-        text-align: center;
-        padding: 20px;
-        background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(118,75,162,0.1));
-        border-radius: 15px;
-        margin-bottom: 20px;
+    /* Text colors */
+    .stMarkdown p, .stMarkdown span {
+        color: var(--text-secondary) !important;
     }
 
-    .calendar-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: white;
+    h1, h2, h3, h4 {
+        color: var(--text-primary) !important;
     }
 
-    .calendar-subtitle {
-        font-size: 14px;
-        color: rgba(255,255,255,0.7);
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .main .block-container {
+            padding: 1rem;
+        }
+
+        .hero-card {
+            padding: 24px;
+        }
+
+        .hero-name {
+            font-size: 26px;
+        }
+
+        .hero-stats {
+            gap: 16px;
+        }
+
+        .hero-stat-value {
+            font-size: 22px;
+        }
+
+        .week-days {
+            gap: 4px;
+        }
+
+        .day-item {
+            padding: 12px 4px;
+        }
+
+        .day-number {
+            font-size: 15px;
+        }
+
+        .workout-title {
+            font-size: 20px;
+        }
+
+        .exercise-item {
+            padding: 12px;
+        }
+
+        .exercise-icon-box {
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
+        }
+
+        .exercise-name {
+            font-size: 14px;
+        }
     }
 
-    /* Progress bar custom */
-    .progress-container {
-        background: rgba(255,255,255,0.1);
-        border-radius: 10px;
-        height: 25px;
-        margin: 10px 0;
-        overflow: hidden;
-    }
+    @media (max-width: 480px) {
+        .hero-stats {
+            flex-wrap: wrap;
+        }
 
-    .progress-bar-luca {
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        height: 100%;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 12px;
-        transition: width 0.5s ease;
-    }
+        .day-letter {
+            font-size: 10px;
+        }
 
-    .progress-bar-sonia {
-        background: linear-gradient(90deg, #ec4899, #ef4444);
-        height: 100%;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 12px;
-        transition: width 0.5s ease;
-    }
-
-    /* Hide Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-
-    .block-container {
-        padding-top: 2rem;
-    }
-
-    /* Checkbox styling */
-    .stCheckbox {
-        background: rgba(255,255,255,0.05);
-        padding: 10px;
-        border-radius: 10px;
-        margin: 5px 0;
+        .day-number {
+            font-size: 14px;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================================
-# PROGRAMMES OPTIMISÉS - MEILLEURS EXERCICES MAISON SANS/PEU MATÉRIEL
+# PROGRAMMES
 # ============================================================================
 
-# Programme LUCA - Prise de masse + Abdos + Bras (1m95, 88kg -> 90kg muscle)
+JOURS_SEMAINE = ["Lun", "Mar", "Mer", "Jeu", "Ven"]
+
 PROGRAMME_LUCA = {
-    "Lundi": {
-        "type": "Pectoraux & Triceps",
-        "badge_class": "",
-        "exercices": [
-            {"nom": "Pompes classiques", "icon": "💪", "series": "4x20", "video": "https://www.youtube.com/watch?v=IODxDxX7oi4", "desc": "Base pour pectoraux"},
-            {"nom": "Pompes diamant", "icon": "💎", "series": "4x12", "video": "https://www.youtube.com/watch?v=J0DnG1_S92I", "desc": "Triceps + pecs intérieurs"},
-            {"nom": "Pompes déclinées (pieds surélevés)", "icon": "📐", "series": "3x15", "video": "https://www.youtube.com/watch?v=SKPab2YC9AY", "desc": "Haut des pectoraux"},
-            {"nom": "Pompes archer", "icon": "🏹", "series": "3x8/côté", "video": "https://www.youtube.com/watch?v=LpnJXyuRsWg", "desc": "Force unilatérale"},
-            {"nom": "Dips sur chaises", "icon": "🪑", "series": "4x15", "video": "https://www.youtube.com/watch?v=HCf97NPYeGY", "desc": "Triceps puissants"},
-            {"nom": "Pompes serrées", "icon": "🔥", "series": "3x15", "video": "https://www.youtube.com/watch?v=5M7JMb5jhq4", "desc": "Finition triceps"},
-        ]
-    },
-    "Mardi": {
-        "type": "Dos & Biceps",
-        "badge_class": "",
-        "exercices": [
-            {"nom": "Tractions pronation (barre de porte)", "icon": "🚪", "series": "4x max", "video": "https://www.youtube.com/watch?v=eGo4IYlbE5g", "desc": "Meilleur exo dos"},
-            {"nom": "Tractions supination (chin-ups)", "icon": "💪", "series": "3x max", "video": "https://www.youtube.com/watch?v=brhRXlOhWB8", "desc": "Dos + biceps"},
-            {"nom": "Rowing inversé (sous une table)", "icon": "🪑", "series": "4x12", "video": "https://www.youtube.com/watch?v=OYUxXMGVuuU", "desc": "Épaisseur dos"},
-            {"nom": "Superman hold", "icon": "🦸", "series": "4x30sec", "video": "https://www.youtube.com/watch?v=cc6UVRS7PW4", "desc": "Lombaires"},
-            {"nom": "Curl biceps (bouteilles d'eau 5-6L)", "icon": "🍶", "series": "4x15", "video": "https://www.youtube.com/watch?v=ykJmrZ5v0Oo", "desc": "Volume biceps"},
-            {"nom": "Curl isométrique (serviette)", "icon": "🧲", "series": "3x20sec", "video": "https://www.youtube.com/watch?v=nRXF8LZqqss", "desc": "Intensité max"},
-        ]
-    },
-    "Mercredi": {
-        "type": "Abdos Intenses",
-        "badge_class": "day-badge-cardio",
-        "exercices": [
-            {"nom": "Crunchs", "icon": "🎯", "series": "4x25", "video": "https://www.youtube.com/watch?v=Xyd_fa5zoEU", "desc": "Abdos supérieurs"},
-            {"nom": "Relevé de jambes au sol", "icon": "🦵", "series": "4x15", "video": "https://www.youtube.com/watch?v=JB2oyawG9KI", "desc": "Abdos inférieurs"},
-            {"nom": "Planche", "icon": "📏", "series": "4x1min", "video": "https://www.youtube.com/watch?v=ASdvN_XEl_c", "desc": "Gainage profond"},
-            {"nom": "Planche latérale", "icon": "📐", "series": "3x45sec/côté", "video": "https://www.youtube.com/watch?v=K2VljzCC16g", "desc": "Obliques"},
-            {"nom": "Mountain climbers", "icon": "⛰️", "series": "4x30sec", "video": "https://www.youtube.com/watch?v=nmwgirgXLYM", "desc": "Cardio + abdos"},
-            {"nom": "Bicycle crunch", "icon": "🚴", "series": "3x20", "video": "https://www.youtube.com/watch?v=9FGilxCbdz8", "desc": "Obliques définition"},
-            {"nom": "Dead bug", "icon": "🐛", "series": "3x12/côté", "video": "https://www.youtube.com/watch?v=4XLEnwUr1d8", "desc": "Stabilisation core"},
-        ]
-    },
-    "Jeudi": {
-        "type": "Épaules & Bras",
-        "badge_class": "",
-        "exercices": [
-            {"nom": "Pike push-ups", "icon": "🔺", "series": "4x12", "video": "https://www.youtube.com/watch?v=sposDXWEB0A", "desc": "Épaules avant"},
-            {"nom": "Handstand contre mur", "icon": "🤸", "series": "3x30sec", "video": "https://www.youtube.com/watch?v=xIdKwIB3M3E", "desc": "Épaules complètes"},
-            {"nom": "Élévations latérales (bouteilles)", "icon": "🦅", "series": "4x15", "video": "https://www.youtube.com/watch?v=3VcKaXpzqRo", "desc": "Deltoïdes latéraux"},
-            {"nom": "Pompes pseudo planche", "icon": "🏋️", "series": "3x10", "video": "https://www.youtube.com/watch?v=odcPqBOlJlY", "desc": "Épaules avant intenses"},
-            {"nom": "Curl marteau (bouteilles)", "icon": "🔨", "series": "4x12", "video": "https://www.youtube.com/watch?v=zC3nLlEvin4", "desc": "Brachial + biceps"},
-            {"nom": "Triceps extensions sol", "icon": "💥", "series": "3x12", "video": "https://www.youtube.com/watch?v=_gsUck-7M74", "desc": "Longue portion triceps"},
-        ]
-    },
-    "Vendredi": {
-        "type": "Jambes & Core",
-        "badge_class": "",
-        "exercices": [
-            {"nom": "Squats", "icon": "🦵", "series": "4x20", "video": "https://www.youtube.com/watch?v=aclHkVaku9U", "desc": "Quadriceps"},
-            {"nom": "Squats bulgares", "icon": "🇧🇬", "series": "3x12/jambe", "video": "https://www.youtube.com/watch?v=2C-uNgKwPLE", "desc": "Force unilatérale"},
-            {"nom": "Fentes marchées", "icon": "🚶", "series": "3x20 total", "video": "https://www.youtube.com/watch?v=QOVaHwm-Q6U", "desc": "Jambes complètes"},
-            {"nom": "Pont fessier une jambe", "icon": "🌉", "series": "3x15/jambe", "video": "https://www.youtube.com/watch?v=AVAXhy6pl7o", "desc": "Fessiers puissants"},
-            {"nom": "Pistol squat (assisté)", "icon": "🔫", "series": "3x5/jambe", "video": "https://www.youtube.com/watch?v=vq5-vdgJc0I", "desc": "Force avancée"},
-            {"nom": "Mollets sur marche", "icon": "🦶", "series": "4x25", "video": "https://www.youtube.com/watch?v=gwLzBJYoWlI", "desc": "Mollets"},
-            {"nom": "Hollow body hold", "icon": "🍌", "series": "3x30sec", "video": "https://www.youtube.com/watch?v=LlDNef_Ztsc", "desc": "Core profond"},
-        ]
-    }
+    "Lun": {"titre": "Pectoraux & Triceps", "duree": "35", "kcal": "280", "couleur": "#7c3aed", "exercices": [
+        {"nom": "Pompes classiques", "icon": "💪", "sets": "4×20", "video": "https://www.youtube.com/watch?v=IODxDxX7oi4"},
+        {"nom": "Pompes diamant", "icon": "💎", "sets": "4×12", "video": "https://www.youtube.com/watch?v=J0DnG1_S92I"},
+        {"nom": "Pompes déclinées", "icon": "📐", "sets": "3×15", "video": "https://www.youtube.com/watch?v=SKPab2YC9AY"},
+        {"nom": "Dips sur chaises", "icon": "🪑", "sets": "4×15", "video": "https://www.youtube.com/watch?v=HCf97NPYeGY"},
+        {"nom": "Pompes serrées", "icon": "🔥", "sets": "3×15", "video": "https://www.youtube.com/watch?v=5M7JMb5jhq4"},
+    ]},
+    "Mar": {"titre": "Dos & Biceps", "duree": "40", "kcal": "320", "couleur": "#3b82f6", "exercices": [
+        {"nom": "Tractions", "icon": "🚪", "sets": "4×max", "video": "https://www.youtube.com/watch?v=eGo4IYlbE5g"},
+        {"nom": "Rowing inversé", "icon": "🪑", "sets": "4×12", "video": "https://www.youtube.com/watch?v=OYUxXMGVuuU"},
+        {"nom": "Superman", "icon": "🦸", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=cc6UVRS7PW4"},
+        {"nom": "Curl biceps", "icon": "🍶", "sets": "4×15", "video": "https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
+        {"nom": "Curl marteau", "icon": "🔨", "sets": "3×12", "video": "https://www.youtube.com/watch?v=zC3nLlEvin4"},
+    ]},
+    "Mer": {"titre": "Abdos Intenses", "duree": "30", "kcal": "250", "couleur": "#ef4444", "exercices": [
+        {"nom": "Crunchs", "icon": "🎯", "sets": "4×25", "video": "https://www.youtube.com/watch?v=Xyd_fa5zoEU"},
+        {"nom": "Relevé de jambes", "icon": "🦵", "sets": "4×15", "video": "https://www.youtube.com/watch?v=JB2oyawG9KI"},
+        {"nom": "Planche", "icon": "📏", "sets": "4×1min", "video": "https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+        {"nom": "Mountain climbers", "icon": "⛰️", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=nmwgirgXLYM"},
+        {"nom": "Bicycle crunch", "icon": "🚴", "sets": "3×20", "video": "https://www.youtube.com/watch?v=9FGilxCbdz8"},
+    ]},
+    "Jeu": {"titre": "Épaules & Bras", "duree": "35", "kcal": "260", "couleur": "#f59e0b", "exercices": [
+        {"nom": "Pike push-ups", "icon": "🔺", "sets": "4×12", "video": "https://www.youtube.com/watch?v=sposDXWEB0A"},
+        {"nom": "Élévations latérales", "icon": "🦅", "sets": "4×15", "video": "https://www.youtube.com/watch?v=3VcKaXpzqRo"},
+        {"nom": "Handstand au mur", "icon": "🤸", "sets": "3×30s", "video": "https://www.youtube.com/watch?v=xIdKwIB3M3E"},
+        {"nom": "Curl concentration", "icon": "💪", "sets": "3×12", "video": "https://www.youtube.com/watch?v=ykJmrZ5v0Oo"},
+        {"nom": "Triceps extensions", "icon": "💥", "sets": "3×15", "video": "https://www.youtube.com/watch?v=_gsUck-7M74"},
+    ]},
+    "Ven": {"titre": "Jambes & Core", "duree": "40", "kcal": "350", "couleur": "#10b981", "exercices": [
+        {"nom": "Squats", "icon": "🦵", "sets": "4×20", "video": "https://www.youtube.com/watch?v=aclHkVaku9U"},
+        {"nom": "Fentes marchées", "icon": "🚶", "sets": "3×20", "video": "https://www.youtube.com/watch?v=QOVaHwm-Q6U"},
+        {"nom": "Pont fessier", "icon": "🌉", "sets": "4×15", "video": "https://www.youtube.com/watch?v=AVAXhy6pl7o"},
+        {"nom": "Squats bulgares", "icon": "🇧🇬", "sets": "3×12", "video": "https://www.youtube.com/watch?v=2C-uNgKwPLE"},
+        {"nom": "Mollets", "icon": "🦶", "sets": "4×25", "video": "https://www.youtube.com/watch?v=gwLzBJYoWlI"},
+    ]},
 }
 
-# Programme SONIA - Perte de poids (1m50, 75kg -> 60-65kg)
 PROGRAMME_SONIA = {
-    "Lundi": {
-        "type": "Cardio Brûle-Graisse",
-        "badge_class": "day-badge-cardio",
-        "exercices": [
-            {"nom": "Jumping jacks", "icon": "⭐", "series": "4x45sec", "video": "https://www.youtube.com/watch?v=c4DAnQ6DtF8", "desc": "Échauffement cardio"},
-            {"nom": "High knees (genoux hauts)", "icon": "🦵", "series": "4x30sec", "video": "https://www.youtube.com/watch?v=D0CzP4JHbKQ", "desc": "Brûle calories"},
-            {"nom": "Burpees modifiés", "icon": "🔥", "series": "3x10", "video": "https://www.youtube.com/watch?v=dZgVxmf6jkA", "desc": "Full body intense"},
-            {"nom": "Mountain climbers", "icon": "⛰️", "series": "4x30sec", "video": "https://www.youtube.com/watch?v=nmwgirgXLYM", "desc": "Cardio + abdos"},
-            {"nom": "Squat jumps", "icon": "🦘", "series": "3x12", "video": "https://www.youtube.com/watch?v=U4s4mEQ5VqU", "desc": "Jambes explosives"},
-            {"nom": "Corde à sauter (ou sans corde)", "icon": "🪢", "series": "3x1min", "video": "https://www.youtube.com/watch?v=u3zgHI8QnqE", "desc": "Cardio efficace"},
-        ]
-    },
-    "Mardi": {
-        "type": "Cuisses & Fessiers",
-        "badge_class": "",
-        "exercices": [
-            {"nom": "Squats", "icon": "🦵", "series": "4x20", "video": "https://www.youtube.com/watch?v=aclHkVaku9U", "desc": "Base cuisses"},
-            {"nom": "Sumo squats", "icon": "🏋️", "series": "4x15", "video": "https://www.youtube.com/watch?v=9ZuXKqRbT9k", "desc": "Intérieur cuisses"},
-            {"nom": "Fentes arrière", "icon": "🚶", "series": "3x12/jambe", "video": "https://www.youtube.com/watch?v=QOVaHwm-Q6U", "desc": "Galbe cuisses"},
-            {"nom": "Pont fessier", "icon": "🌉", "series": "4x25", "video": "https://www.youtube.com/watch?v=OUgsJ8-Vi0E", "desc": "Fessiers bombés"},
-            {"nom": "Donkey kicks", "icon": "🐴", "series": "3x20/jambe", "video": "https://www.youtube.com/watch?v=BX67kECR0h0", "desc": "Haut des fessiers"},
-            {"nom": "Fire hydrant", "icon": "🔥", "series": "3x15/jambe", "video": "https://www.youtube.com/watch?v=La3xYT8MGks", "desc": "Fessiers côtés"},
-            {"nom": "Clam shells", "icon": "🐚", "series": "3x20/côté", "video": "https://www.youtube.com/watch?v=kfUgsfeEj_4", "desc": "Hanches"},
-        ]
-    },
-    "Mercredi": {
-        "type": "HIIT Brûle-Graisse",
-        "badge_class": "day-badge-cardio",
-        "exercices": [
-            {"nom": "Burpees sans saut", "icon": "🔥", "series": "4x8", "video": "https://www.youtube.com/watch?v=dZgVxmf6jkA", "desc": "Full body"},
-            {"nom": "Speed skaters", "icon": "⛸️", "series": "4x30sec", "video": "https://www.youtube.com/watch?v=d1J3bkXgQf4", "desc": "Cardio latéral"},
-            {"nom": "Squat pulses", "icon": "💫", "series": "3x30sec", "video": "https://www.youtube.com/watch?v=WGE1DYu9g5s", "desc": "Brûle cuisses"},
-            {"nom": "Step ups (sur marche/chaise)", "icon": "📦", "series": "3x15/jambe", "video": "https://www.youtube.com/watch?v=dQqApCGd5Ss", "desc": "Cardio + jambes"},
-            {"nom": "Planche", "icon": "📏", "series": "4x45sec", "video": "https://www.youtube.com/watch?v=ASdvN_XEl_c", "desc": "Gainage"},
-            {"nom": "Jumping lunges (ou alternées)", "icon": "🦘", "series": "3x10/jambe", "video": "https://www.youtube.com/watch?v=y7Iug7eC0dk", "desc": "Explosivité"},
-        ]
-    },
-    "Jeudi": {
-        "type": "Haut du Corps & Abdos",
-        "badge_class": "",
-        "exercices": [
-            {"nom": "Pompes sur genoux", "icon": "💪", "series": "4x12", "video": "https://www.youtube.com/watch?v=jWxvty2KROs", "desc": "Pectoraux débutant"},
-            {"nom": "Pompes inclinées (sur table)", "icon": "📐", "series": "3x15", "video": "https://www.youtube.com/watch?v=4dF1DOWzf20", "desc": "Progression pompes"},
-            {"nom": "Dips sur chaise", "icon": "🪑", "series": "3x12", "video": "https://www.youtube.com/watch?v=HCf97NPYeGY", "desc": "Triceps"},
-            {"nom": "Crunchs", "icon": "🎯", "series": "4x20", "video": "https://www.youtube.com/watch?v=Xyd_fa5zoEU", "desc": "Abdos hauts"},
-            {"nom": "Bicycle crunch", "icon": "🚴", "series": "3x20", "video": "https://www.youtube.com/watch?v=9FGilxCbdz8", "desc": "Obliques"},
-            {"nom": "Leg raises au sol", "icon": "🦵", "series": "3x15", "video": "https://www.youtube.com/watch?v=JB2oyawG9KI", "desc": "Abdos bas"},
-            {"nom": "Planche latérale", "icon": "📐", "series": "3x30sec/côté", "video": "https://www.youtube.com/watch?v=K2VljzCC16g", "desc": "Taille fine"},
-        ]
-    },
-    "Vendredi": {
-        "type": "Full Body Brûle-Graisse",
-        "badge_class": "day-badge-cardio",
-        "exercices": [
-            {"nom": "Jumping jacks", "icon": "⭐", "series": "3x1min", "video": "https://www.youtube.com/watch?v=c4DAnQ6DtF8", "desc": "Échauffement"},
-            {"nom": "Squats + press épaules", "icon": "🏋️", "series": "4x15", "video": "https://www.youtube.com/watch?v=nKxPrWyTU4k", "desc": "Combo complet"},
-            {"nom": "Pompes sur genoux", "icon": "💪", "series": "3x10", "video": "https://www.youtube.com/watch?v=jWxvty2KROs", "desc": "Haut du corps"},
-            {"nom": "Fentes alternées", "icon": "🚶", "series": "3x20 total", "video": "https://www.youtube.com/watch?v=QOVaHwm-Q6U", "desc": "Jambes"},
-            {"nom": "Mountain climbers", "icon": "⛰️", "series": "4x30sec", "video": "https://www.youtube.com/watch?v=nmwgirgXLYM", "desc": "Cardio final"},
-            {"nom": "Planche", "icon": "📏", "series": "3x1min", "video": "https://www.youtube.com/watch?v=ASdvN_XEl_c", "desc": "Finition core"},
-            {"nom": "Stretch récupération", "icon": "🧘", "series": "5min", "video": "https://www.youtube.com/watch?v=g_tea8ZNk5A", "desc": "Récupération"},
-        ]
-    }
+    "Lun": {"titre": "Cardio Brûle-Graisse", "duree": "30", "kcal": "350", "couleur": "#ef4444", "exercices": [
+        {"nom": "Jumping jacks", "icon": "⭐", "sets": "4×45s", "video": "https://www.youtube.com/watch?v=c4DAnQ6DtF8"},
+        {"nom": "High knees", "icon": "🦵", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=D0CzP4JHbKQ"},
+        {"nom": "Burpees modifiés", "icon": "🔥", "sets": "3×10", "video": "https://www.youtube.com/watch?v=dZgVxmf6jkA"},
+        {"nom": "Mountain climbers", "icon": "⛰️", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=nmwgirgXLYM"},
+        {"nom": "Squat jumps", "icon": "🦘", "sets": "3×12", "video": "https://www.youtube.com/watch?v=U4s4mEQ5VqU"},
+    ]},
+    "Mar": {"titre": "Cuisses & Fessiers", "duree": "35", "kcal": "280", "couleur": "#ec4899", "exercices": [
+        {"nom": "Squats", "icon": "🦵", "sets": "4×20", "video": "https://www.youtube.com/watch?v=aclHkVaku9U"},
+        {"nom": "Sumo squats", "icon": "🏋️", "sets": "4×15", "video": "https://www.youtube.com/watch?v=9ZuXKqRbT9k"},
+        {"nom": "Pont fessier", "icon": "🌉", "sets": "4×25", "video": "https://www.youtube.com/watch?v=OUgsJ8-Vi0E"},
+        {"nom": "Donkey kicks", "icon": "🐴", "sets": "3×20", "video": "https://www.youtube.com/watch?v=BX67kECR0h0"},
+        {"nom": "Fire hydrant", "icon": "🔥", "sets": "3×15", "video": "https://www.youtube.com/watch?v=La3xYT8MGks"},
+    ]},
+    "Mer": {"titre": "HIIT Brûle-Graisse", "duree": "25", "kcal": "400", "couleur": "#f97316", "exercices": [
+        {"nom": "Burpees", "icon": "🔥", "sets": "4×8", "video": "https://www.youtube.com/watch?v=dZgVxmf6jkA"},
+        {"nom": "Speed skaters", "icon": "⛸️", "sets": "4×30s", "video": "https://www.youtube.com/watch?v=d1J3bkXgQf4"},
+        {"nom": "Squat pulses", "icon": "💫", "sets": "3×30s", "video": "https://www.youtube.com/watch?v=WGE1DYu9g5s"},
+        {"nom": "Step ups", "icon": "📦", "sets": "3×15", "video": "https://www.youtube.com/watch?v=dQqApCGd5Ss"},
+        {"nom": "Planche", "icon": "📏", "sets": "4×45s", "video": "https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+    ]},
+    "Jeu": {"titre": "Haut du Corps & Abdos", "duree": "30", "kcal": "220", "couleur": "#8b5cf6", "exercices": [
+        {"nom": "Pompes sur genoux", "icon": "💪", "sets": "4×12", "video": "https://www.youtube.com/watch?v=jWxvty2KROs"},
+        {"nom": "Dips sur chaise", "icon": "🪑", "sets": "3×12", "video": "https://www.youtube.com/watch?v=HCf97NPYeGY"},
+        {"nom": "Crunchs", "icon": "🎯", "sets": "4×20", "video": "https://www.youtube.com/watch?v=Xyd_fa5zoEU"},
+        {"nom": "Bicycle crunch", "icon": "🚴", "sets": "3×20", "video": "https://www.youtube.com/watch?v=9FGilxCbdz8"},
+        {"nom": "Planche latérale", "icon": "📐", "sets": "3×30s", "video": "https://www.youtube.com/watch?v=K2VljzCC16g"},
+    ]},
+    "Ven": {"titre": "Full Body", "duree": "35", "kcal": "380", "couleur": "#10b981", "exercices": [
+        {"nom": "Jumping jacks", "icon": "⭐", "sets": "3×1min", "video": "https://www.youtube.com/watch?v=c4DAnQ6DtF8"},
+        {"nom": "Squats + press", "icon": "🏋️", "sets": "4×15", "video": "https://www.youtube.com/watch?v=nKxPrWyTU4k"},
+        {"nom": "Pompes", "icon": "💪", "sets": "3×10", "video": "https://www.youtube.com/watch?v=jWxvty2KROs"},
+        {"nom": "Fentes alternées", "icon": "🚶", "sets": "3×20", "video": "https://www.youtube.com/watch?v=QOVaHwm-Q6U"},
+        {"nom": "Planche", "icon": "📏", "sets": "3×1min", "video": "https://www.youtube.com/watch?v=ASdvN_XEl_c"},
+    ]},
 }
 
-def afficher_motivation():
-    """Affiche une citation motivante aléatoire"""
-    import random
-    citation = random.choice(CITATIONS)
+# ============================================================================
+# FONCTIONS
+# ============================================================================
+
+def get_week_number():
+    return str(date.today().isocalendar()[1])
+
+def get_completed_days(prefix):
+    week = get_week_number()
+    seances = st.session_state.data[prefix].get('seances_completees', [])
+    return [s.split('_')[1] for s in seances if s.startswith(week)]
+
+def toggle_day(prefix, jour):
+    week = get_week_number()
+    key = f"{week}_{jour}"
+    seances = st.session_state.data[prefix].get('seances_completees', [])
+    if key in seances:
+        seances.remove(key)
+    else:
+        seances.append(key)
+    st.session_state.data[prefix]['seances_completees'] = seances[-100:]
+    save_data(st.session_state.data)
+
+def afficher_hero(prefix, nom, poids_actuel, objectif, is_homme=True):
+    completed = len(get_completed_days(prefix))
+    total_seances = len(st.session_state.data[prefix].get('seances_completees', []))
+
+    greeting = "Salut" if is_homme else "Hello"
+    emoji = "👨" if is_homme else "👩"
+
     st.markdown(f"""
-    <div class="motivation-box">
-        <div class="motivation-text">{citation}</div>
+    <div class="hero-card">
+        <div class="hero-greeting">{greeting}, prêt(e) à t'entraîner ?</div>
+        <div class="hero-name">{emoji} {nom}</div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="hero-stat-value">{poids_actuel}</div>
+                <div class="hero-stat-label">kg actuel</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value">{objectif}</div>
+                <div class="hero-stat-label">kg objectif</div>
+            </div>
+            <div class="hero-stat">
+                <div class="hero-stat-value">{total_seances}</div>
+                <div class="hero-stat-label">séances</div>
+            </div>
+        </div>
+        <div class="streak-badge">
+            <span>🔥</span>
+            <span class="streak-badge-text">{completed}/5 cette semaine</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+def afficher_objectif(is_perte=False):
+    if is_perte:
+        texte = "Perdre 10-15 kg • Tonifier cuisses & fessiers • Ventre plat"
+    else:
+        texte = "Prise de masse musculaire • Abdos visibles • Bras musclés"
+
+    st.markdown(f"""
+    <div class="objective-card">
+        <div class="objective-label">🎯 Objectif</div>
+        <div class="objective-text">{texte}</div>
     </div>
     """, unsafe_allow_html=True)
 
 def afficher_progression(prefix, poids_initial, poids_objectif, is_perte=False):
-    """Affiche la section de suivi de progression"""
-    data = st.session_state.data[prefix]
+    poids_actuel = st.session_state.data[prefix].get('poids_actuel', poids_initial)
 
-    st.markdown("### 📊 Suivi de Progression")
+    if is_perte:
+        total = poids_initial - poids_objectif
+        fait = poids_initial - poids_actuel
+    else:
+        total = poids_objectif - poids_initial
+        fait = poids_actuel - poids_initial
 
-    col1, col2 = st.columns([2, 1])
+    prog = min(max((fait / total) * 100, 0), 100) if total > 0 else 0
 
-    with col1:
-        # Mise à jour du poids
-        st.markdown("**📝 Mettre à jour ton poids**")
-        new_poids = st.number_input(
-            "Poids actuel (kg)",
-            min_value=40.0,
-            max_value=150.0,
-            value=float(data.get('poids_actuel', poids_initial)),
-            step=0.1,
-            key=f"{prefix}_poids_input"
-        )
+    st.markdown(f"""
+    <div class="progress-card">
+        <div class="progress-header">
+            <div class="progress-title">📊 Progression</div>
+            <div class="progress-value">{prog:.0f}%</div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {prog}%;"></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        if st.button("💾 Enregistrer", key=f"{prefix}_save_poids"):
-            today = str(date.today())
-            # Éviter les doublons pour le même jour
-            history = data.get('poids_history', [])
-            history = [h for h in history if h['date'] != today]
-            history.append({'date': today, 'poids': new_poids})
-            data['poids_history'] = history[-30:]  # Garder les 30 derniers
-            data['poids_actuel'] = new_poids
-            st.session_state.data[prefix] = data
+    with st.expander("⚖️ Mettre à jour mon poids"):
+        new_poids = st.number_input("Poids (kg)", min_value=40.0, max_value=150.0,
+                                     value=float(poids_actuel), step=0.1, key=f"{prefix}_poids")
+        if st.button("💾 Enregistrer", key=f"{prefix}_save"):
+            st.session_state.data[prefix]['poids_actuel'] = new_poids
             save_data(st.session_state.data)
             st.success("✅ Poids enregistré !")
             st.rerun()
 
-    with col2:
-        # Calcul de la progression
-        poids_actuel = data.get('poids_actuel', poids_initial)
+def afficher_calendrier(prefix, programme):
+    completed = get_completed_days(prefix)
 
-        if is_perte:
-            # Pour la perte de poids
-            total_a_perdre = poids_initial - poids_objectif
-            deja_perdu = poids_initial - poids_actuel
-            progression = min(max((deja_perdu / total_a_perdre) * 100, 0), 100) if total_a_perdre > 0 else 0
-            restant = poids_actuel - poids_objectif
-        else:
-            # Pour la prise de masse
-            total_a_prendre = poids_objectif - poids_initial
-            deja_pris = poids_actuel - poids_initial
-            progression = min(max((deja_pris / total_a_prendre) * 100, 0), 100) if total_a_prendre > 0 else 0
-            restant = poids_objectif - poids_actuel
+    st.markdown("""<div class="week-calendar"><div class="week-title">📅 Cette semaine</div><div class="week-days">""", unsafe_allow_html=True)
+
+    jours_html = ""
+    for jour in JOURS_SEMAINE:
+        is_done = jour in completed
+        classe = "completed" if is_done else ""
+        check = "✓" if is_done else ""
+        jours_html += f"""
+        <div class="day-item {classe}">
+            <div class="day-letter">{jour}</div>
+            <div class="day-number">{check if is_done else "○"}</div>
+        </div>
+        """
+
+    st.markdown(jours_html + "</div></div>", unsafe_allow_html=True)
+
+    # Boutons pour cocher/décocher
+    cols = st.columns(5)
+    for i, jour in enumerate(JOURS_SEMAINE):
+        with cols[i]:
+            is_done = jour in completed
+            label = "✓" if is_done else "○"
+            if st.button(label, key=f"{prefix}_toggle_{jour}", use_container_width=True):
+                toggle_day(prefix, jour)
+                st.rerun()
+
+def afficher_workout(prefix, programme):
+    jour = st.selectbox("Choisis ton jour", JOURS_SEMAINE, key=f"{prefix}_jour")
+    workout = programme[jour]
+
+    st.markdown(f"""
+    <div class="workout-card">
+        <div class="workout-header">
+            <div>
+                <div class="workout-badge">JOUR {JOURS_SEMAINE.index(jour) + 1}</div>
+                <div class="workout-title">{workout['titre']}</div>
+                <div class="workout-meta">
+                    <div class="workout-meta-item">⏱️ {workout['duree']} min</div>
+                    <div class="workout-meta-item">🔥 {workout['kcal']} kcal</div>
+                    <div class="workout-meta-item">💪 {len(workout['exercices'])} exercices</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="exercise-list">', unsafe_allow_html=True)
+
+    for ex in workout['exercices']:
+        col1, col2 = st.columns([6, 1])
+        with col1:
+            st.markdown(f"""
+            <div class="exercise-item">
+                <div class="exercise-icon-box">{ex['icon']}</div>
+                <div class="exercise-content">
+                    <div class="exercise-name">{ex['nom']}</div>
+                    <div class="exercise-sets">{ex['sets']}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col2:
+            if st.button("▶", key=f"{prefix}_{jour}_{ex['nom']}"):
+                st.session_state[f"{prefix}_video"] = ex
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+def afficher_video(prefix):
+    key = f"{prefix}_video"
+    if key in st.session_state and st.session_state[key]:
+        ex = st.session_state[key]
 
         st.markdown(f"""
-        <div style="text-align: center; padding: 15px;">
-            <div style="font-size: 14px; color: rgba(255,255,255,0.7);">Progression</div>
-            <div style="font-size: 32px; font-weight: 700; color: {'#22c55e' if progression >= 50 else '#f59e0b'};">{progression:.1f}%</div>
-            <div style="font-size: 12px; color: rgba(255,255,255,0.5);">{'Reste ' + str(abs(round(restant, 1))) + ' kg'}</div>
+        <div class="video-card">
+            <div class="video-header">
+                <div class="video-icon">{ex['icon']}</div>
+                <div>
+                    <div class="video-title">{ex['nom']}</div>
+                    <div class="video-subtitle">{ex['sets']}</div>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
-    # Barre de progression
-    bar_class = "progress-bar-sonia" if is_perte else "progress-bar-luca"
-    st.markdown(f"""
-    <div class="progress-container">
-        <div class="{bar_class}" style="width: {progression}%;">
-            {progression:.0f}%
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        video_id = ex['video'].split("watch?v=")[1].split("&")[0] if "watch?v=" in ex['video'] else ex['video'].split("/")[-1]
+        st.video(f"https://www.youtube.com/watch?v={video_id}")
 
-    # Historique graphique
-    if data.get('poids_history'):
-        st.markdown("**📈 Évolution du poids**")
-        history = data['poids_history']
-        dates = [h['date'] for h in history]
-        poids_list = [h['poids'] for h in history]
+        if st.button("❌ Fermer la vidéo", key=f"{prefix}_close"):
+            st.session_state[key] = None
+            st.rerun()
 
-        chart_data = {"Date": dates, "Poids (kg)": poids_list}
-        st.line_chart(chart_data, x="Date", y="Poids (kg)")
+# ============================================================================
+# APP
+# ============================================================================
 
-def afficher_seances_semaine(prefix, programme):
-    """Affiche le tracker de séances de la semaine"""
-    data = st.session_state.data[prefix]
-    seances = data.get('seances_completees', [])
-    today = str(date.today())
-    week_start = str(date.today().isocalendar()[1])
-
-    st.markdown("### ✅ Séances de la semaine")
-
-    cols = st.columns(5)
-    jours = list(programme.keys())
-
-    for idx, jour in enumerate(jours):
-        with cols[idx]:
-            seance_key = f"{week_start}_{jour}"
-            is_done = seance_key in seances
-
-            if st.checkbox(
-                f"{'✅' if is_done else '⬜'} {jour}",
-                value=is_done,
-                key=f"{prefix}_check_{jour}"
-            ):
-                if seance_key not in seances:
-                    seances.append(seance_key)
-            else:
-                if seance_key in seances:
-                    seances.remove(seance_key)
-
-    # Sauvegarder
-    data['seances_completees'] = seances[-50:]  # Garder les 50 dernières
-    st.session_state.data[prefix] = data
-    save_data(st.session_state.data)
-
-    # Afficher le nombre de séances cette semaine
-    seances_semaine = len([s for s in seances if s.startswith(week_start)])
-    st.markdown(f"""
-    <div style="text-align: center; margin-top: 15px;">
-        <span style="font-size: 24px; font-weight: 700; color: #22c55e;">{seances_semaine}/5</span>
-        <span style="color: rgba(255,255,255,0.7);"> séances cette semaine</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-def afficher_profil_luca():
-    poids_actuel = st.session_state.data['luca'].get('poids_actuel', 88)
-    st.markdown(f"""
-    <div class="profile-card profile-card-luca">
-        <div class="profile-name">👨 LUCA</div>
-        <div class="profile-stats">
-            <div class="stat-item">
-                <div class="stat-value">1m95</div>
-                <div class="stat-label">Taille</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">{poids_actuel} kg</div>
-                <div class="stat-label">Poids actuel</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">90 kg</div>
-                <div class="stat-label">Objectif</div>
-            </div>
-        </div>
-        <div class="objective-box">
-            <div class="objective-title">🎯 OBJECTIFS</div>
-            <div class="objective-text">Prise de masse musculaire • Perdre du ventre • Abdos visibles • Bras musclés</div>
-        </div>
-        <div class="materiel-box">
-            <div class="materiel-title">🛠️ MATÉRIEL CONSEILLÉ (optionnel)</div>
-            <div class="materiel-text">Barre de traction porte (~15€) • Bouteilles d'eau 5-6L • 2 chaises solides</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-def afficher_profil_sonia():
-    poids_actuel = st.session_state.data['sonia'].get('poids_actuel', 75)
-    st.markdown(f"""
-    <div class="profile-card profile-card-sonia">
-        <div class="profile-name">👩 SONIA</div>
-        <div class="profile-stats">
-            <div class="stat-item">
-                <div class="stat-value">1m50</div>
-                <div class="stat-label">Taille</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">{poids_actuel} kg</div>
-                <div class="stat-label">Poids actuel</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">60-65 kg</div>
-                <div class="stat-label">Objectif</div>
-            </div>
-        </div>
-        <div class="objective-box">
-            <div class="objective-title">🎯 OBJECTIFS</div>
-            <div class="objective-text">Perdre 10 à 15 kg • Tonifier cuisses & fessiers • Ventre plat</div>
-        </div>
-        <div class="materiel-box">
-            <div class="materiel-title">🛠️ MATÉRIEL CONSEILLÉ (optionnel)</div>
-            <div class="materiel-text">Tapis de yoga (~10€) • Corde à sauter (~5€) • Une chaise ou marche</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-def afficher_calendrier(programme, prefix):
-    """Affiche le calendrier avec les exercices"""
-
-    st.markdown("""
-    <div class="calendar-header">
-        <div class="calendar-title">📅 Programme de la Semaine</div>
-        <div class="calendar-subtitle">Clique sur un exercice pour voir le tutoriel vidéo en français</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    jours = list(programme.keys())
-
-    # Créer 5 colonnes pour les 5 jours
-    cols = st.columns(5)
-
-    for idx, jour in enumerate(jours):
-        with cols[idx]:
-            info = programme[jour]
-            badge_class = info.get("badge_class", "")
-
-            st.markdown(f"""
-            <div class="day-card">
-                <div class="day-header">
-                    <span class="day-name">{jour}</span>
-                </div>
-                <span class="day-badge {badge_class}">{info['type']}</span>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # Afficher les exercices comme boutons
-            for ex in info["exercices"]:
-                button_label = f"{ex['icon']} {ex['nom']}"
-                if st.button(button_label, key=f"{prefix}_{jour}_{ex['nom']}", use_container_width=True, help=ex.get('desc', '')):
-                    st.session_state[f"{prefix}_selected_exercise"] = ex
-                    st.session_state[f"{prefix}_selected_day"] = jour
-
-def afficher_video(prefix):
-    """Affiche la vidéo sélectionnée"""
-    key_exercise = f"{prefix}_selected_exercise"
-    key_day = f"{prefix}_selected_day"
-
-    if key_exercise in st.session_state and st.session_state[key_exercise]:
-        ex = st.session_state[key_exercise]
-        jour = st.session_state.get(key_day, "")
-
-        st.markdown("---")
-
-        col1, col2, col3 = st.columns([1, 3, 1])
-        with col2:
-            st.markdown(f"""
-            <div class="video-container">
-                <div class="video-title">{ex['icon']} {ex['nom']}</div>
-                <p style="color: rgba(255,255,255,0.7); margin-bottom: 10px;">
-                    <strong>Séries:</strong> {ex['series']} | <strong>{ex.get('desc', '')}</strong>
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-
-            # Extraire l'ID de la vidéo YouTube
-            video_url = ex['video']
-            if "watch?v=" in video_url:
-                video_id = video_url.split("watch?v=")[1].split("&")[0]
-            else:
-                video_id = video_url.split("/")[-1]
-
-            # Afficher la vidéo
-            st.video(f"https://www.youtube.com/watch?v={video_id}")
-
-            if st.button("❌ Fermer la vidéo", key=f"{prefix}_close", use_container_width=True):
-                st.session_state[key_exercise] = None
-                st.rerun()
-
-# Titre principal
-st.markdown("""
-<h1 style="text-align: center; font-size: 2.5rem; margin-bottom: 10px;">
-    🏋️ Programme Sport Maison 💪
-</h1>
-<p style="text-align: center; color: rgba(255,255,255,0.6); margin-bottom: 30px;">
-    Sans matériel ou avec très peu • Exercices efficaces à la maison
-</p>
-""", unsafe_allow_html=True)
-
-# Citation motivante
-afficher_motivation()
-
-# Création des onglets
-tab1, tab2 = st.tabs(["👨 LUCA - Prise de Masse", "👩 SONIA - Perte de Poids"])
+tab1, tab2 = st.tabs(["👨 LUCA", "👩 SONIA"])
 
 with tab1:
-    afficher_profil_luca()
-
-    # Section progression
-    with st.expander("📊 **SUIVI DE PROGRESSION** - Clique pour ouvrir", expanded=True):
-        afficher_progression("luca", poids_initial=88, poids_objectif=90, is_perte=False)
-        st.markdown("---")
-        afficher_seances_semaine("luca", PROGRAMME_LUCA)
-
+    poids = st.session_state.data['luca'].get('poids_actuel', 88)
+    afficher_hero("luca", "LUCA", poids, 90, True)
+    afficher_objectif(is_perte=False)
+    afficher_progression("luca", 88, 90, False)
+    afficher_calendrier("luca", PROGRAMME_LUCA)
     st.markdown("---")
-    afficher_calendrier(PROGRAMME_LUCA, "luca")
+    afficher_workout("luca", PROGRAMME_LUCA)
     afficher_video("luca")
 
 with tab2:
-    afficher_profil_sonia()
-
-    # Section progression
-    with st.expander("📊 **SUIVI DE PROGRESSION** - Clique pour ouvrir", expanded=True):
-        afficher_progression("sonia", poids_initial=75, poids_objectif=62.5, is_perte=True)
-        st.markdown("---")
-        afficher_seances_semaine("sonia", PROGRAMME_SONIA)
-
+    poids = st.session_state.data['sonia'].get('poids_actuel', 75)
+    afficher_hero("sonia", "SONIA", poids, 62, False)
+    afficher_objectif(is_perte=True)
+    afficher_progression("sonia", 75, 62, True)
+    afficher_calendrier("sonia", PROGRAMME_SONIA)
     st.markdown("---")
-    afficher_calendrier(PROGRAMME_SONIA, "sonia")
+    afficher_workout("sonia", PROGRAMME_SONIA)
     afficher_video("sonia")
 
-# Footer avec conseils
 st.markdown("---")
 st.markdown("""
-<div style="text-align: center; color: rgba(255,255,255,0.7); padding: 20px;">
-    <h3 style="color: #22c55e;">💡 Conseils pour réussir</h3>
-    <p>💧 <strong>Bois 2-3L d'eau par jour</strong> • 🍎 <strong>Mange équilibré (protéines à chaque repas)</strong></p>
-    <p>😴 <strong>Dors 7-8h minimum</strong> • 📈 <strong>La régularité > L'intensité</strong></p>
-    <p style="font-size: 12px; margin-top: 15px; color: rgba(255,255,255,0.5);">
-        Weekend = repos actif (marche, étirements) pour récupérer 🧘
-    </p>
+<div style="text-align: center; padding: 20px; color: #64748b;">
+    <p>💪 <strong>FitHome Pro</strong></p>
+    <p style="font-size: 12px;">Weekend = Repos actif 🧘</p>
 </div>
 """, unsafe_allow_html=True)
